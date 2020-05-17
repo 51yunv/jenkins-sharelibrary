@@ -7,7 +7,6 @@ def HttpReq(reqType,reqUrl,reqBody){
         result = httpRequest customHeaders: [[maskValue: true, name: 'PRIVATE-TOKEN', value: "${gitlabToken}"]], 
                              httpMode: "${reqType}", 
                              contentType: 'APPLICATION_JSON'
-                             responseHandle: 'NONE', 
                              url: "${gitlabServer}/${reqUrl}",
                              wrapAsMultipart: false
     }
