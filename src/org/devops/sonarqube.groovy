@@ -1,7 +1,7 @@
 package org.devops
 
 //扫描
-def SonarScan(projectName,projectDesc,projectPath){
+def sonarScan(projectName,projectDesc,projectPath){
     //定义sonarServer服务器
     sonarServer = "http://172.17.138.183:9000"
     //执行sh命令，并获取返回值；返回值中有一个换行符\n，需要删除
