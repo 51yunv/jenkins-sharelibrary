@@ -7,7 +7,7 @@ def sonarScan(projectName,projectDesc,projectPath){
     //定义sonarServer服务器
     sonarServer = "http://172.17.138.183:9000"
     //执行sh命令，并获取返回值；返回值中有一个换行符\n，需要删除
-    sonarDate = sh returnStdout: true, script: 'date +%F %T'
+    sonarDate = sh returnStdout: true, script: 'date +\'%F %T\''
     //删除换行符，其余的值作为projectVersion的版本号
     sonarDate = sonarDate - "\n"
     sh """
