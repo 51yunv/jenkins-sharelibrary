@@ -2,6 +2,8 @@ package org.devops
 
 //扫描
 def sonarScan(projectName,projectDesc,projectPath){
+    //定义sonar-scanner命令环境变量
+    sonar_home = "/data/sonarqube/sonar-scanner"
     //定义sonarServer服务器
     sonarServer = "http://172.17.138.183:9000"
     //执行sh命令，并获取返回值；返回值中有一个换行符\n，需要删除
@@ -9,7 +11,7 @@ def sonarScan(projectName,projectDesc,projectPath){
     //删除换行符，其余的值作为projectVersion的版本号
     sonarDate = sonarDate - "\n"
     sh """
-        sonar-scanner -Dsonar.host.url= \
+        ${sonar_home}/bin/sonar-scanner -Dsonar.host.url= \
         -Dsonar.projectKey=${projectName} \
         -Dsonar.projectName=${projectName} \
         -Dsonar.projectVersion=${sonarDate} \
