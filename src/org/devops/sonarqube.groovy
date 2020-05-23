@@ -11,7 +11,7 @@ def sonarScan(projectName,projectDesc,projectPath){
     //删除换行符，其余的值作为projectVersion的版本号
     sonarDate = sonarDate - "\n"
     sh """
-        ${sonar_home}/bin/sonar-scanner -Dsonar.host.url= \
+        ${sonar_home}/bin/sonar-scanner -Dsonar.host.url=${sonarServer} \
         -Dsonar.projectKey=${projectName} \
         -Dsonar.projectName=${projectName} \
         -Dsonar.projectVersion=${sonarDate} \
