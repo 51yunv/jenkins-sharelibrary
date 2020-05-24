@@ -33,7 +33,6 @@ def SearchProject(projectName){
     result = response["paging"]["total"]
     
     if(result.toString() == "0"){
-        
         return "false"
     }else{
         return "true"
