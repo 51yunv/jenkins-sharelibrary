@@ -7,7 +7,7 @@ def sonarScan(projectName,projectDesc,projectPath){
     sonarDate = sh returnStdout: true, script: 'date +%F_%T'
     sonarDate = sonarDate - "\n"
     
-    def qg = waitForQualityGate()
+    
     
     withSonarQubeEnv(credentialsId: 'sonar-token') {
         sh """
@@ -23,6 +23,7 @@ def sonarScan(projectName,projectDesc,projectPath){
             -Dsonar.java.test.binaries=target/test-classes \
             -Dsonar.java.surefire.report=target/surefire-reports
         """
+        def qg = waitForQualityGate()
         if (qg.status != 'OK') {
           error "Pipeline aborted due to quality gate failure: ${qg.status}"
         }
