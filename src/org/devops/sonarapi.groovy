@@ -52,3 +52,18 @@ def ConfigQualityProfiles(lang,projectName,qpname){
     response = HttpReq("POST",apiUrl,'')
     println(response)
 }
+//获取质量阈的id；因为通过api配置项目的质量阈时，需要知道某个质量阈的id
+def GetQualityGateId(qualityGateName){
+    apiUrl = "qualitygates/show?name=${qualityGateName}"
+    response = HttpReq("GET",apiUrl,'')
+    response = readJSON text: """${response.content}"""
+    result = response["id"]
+    return result
+}
+//配置项目质量阈
+def ConfigQualityGates(projectName,qualityGateName){
+    gateId = GetQualityGateId(qualityGateName)
+    apiUrl = "qualitygates/select?projectKey=${projectName}&gateId=${gateId}"
+    response = HttpReq("POST",apiUrl,'')
+    println(response)
+}
