@@ -7,17 +7,17 @@ def sonarScan(projectName,projectDesc,projectPath){
     
     withSonarQubeEnv(credentialsId: 'sonar-token') {
         sh """
-            sonar-scanner -Dsonar.projectKey=demo-maven-service \
-        	-Dsonar.projectName=demo-maven-service \
-        	-Dsonar.projectVersion=1.0 \
-        	-Dsonar.ws.timeout=30 \
-        	-Dsonar.projectDescription="my first project" \
-        	-Dsonar.links.homepage=http://www.baidu.com \
-        	-Dsonar.sources=src \
-        	-Dsonar.sourceEncoding=UTF-8 \
-        	-Dsonar.java.binaries=target/classes \
-        	-Dsonar.java.test.binaries=target/test-classes \
-        	-Dsonar.java.surefire.report=target/surefire-reports
+            sonar-scanner -Dsonar.projectKey=${projectName} \
+            -Dsonar.projectName=${projectName} \
+            -Dsonar.projectVersion=${sonarDate} \
+            -Dsonar.ws.timeout=30 \
+            -Dsonar.projectDescription=${projectDesc} \
+            -Dsonar.links.homepage=http://www.baidu.com \
+            -Dsonar.sources=${projectPath} \
+            -Dsonar.sourceEncoding=UTF-8 \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.java.test.binaries=target/test-classes \
+            -Dsonar.java.surefire.report=target/surefire-reports
         """
     }
 }
