@@ -2,12 +2,16 @@ package org.devops
 
 //扫描
 def sonarScan(projectName,projectDesc,projectPath){
+    //定义sonar-scanner命令环境变量
+    sonar_home = "/data/sonarqube/sonar-scanner"
+    
     sonarDate = sh returnStdout: true, script: 'date +%F_%T'
     sonarDate = sonarDate - "\n"
     
+    
     withSonarQubeEnv(credentialsId: 'sonar-token') {
         sh """
-            sonar-scanner -Dsonar.projectKey=${projectName} \
+            ${sonar_home}/bin/sonar-scanner -Dsonar.projectKey=${projectName} \
             -Dsonar.projectName=${projectName} \
             -Dsonar.projectVersion=${sonarDate} \
             -Dsonar.ws.timeout=30 \
