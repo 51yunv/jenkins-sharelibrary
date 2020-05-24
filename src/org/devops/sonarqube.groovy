@@ -2,28 +2,22 @@ package org.devops
 
 //扫描
 def sonarScan(projectName,projectDesc,projectPath){
-    //定义sonar-scanner命令环境变量
-    sonar_home = "/data/sonarqube/sonar-scanner"
-    //定义sonarServer服务器
-    sonarServer = "http://172.17.138.183:9000"
-    //执行sh命令，并获取返回值；返回值中有一个换行符\n，需要删除
     sonarDate = sh returnStdout: true, script: 'date +%F_%T'
-    //删除换行符，其余的值作为projectVersion的版本号
     sonarDate = sonarDate - "\n"
-    sh """
-        ${sonar_home}/bin/sonar-scanner -Dsonar.host.url=${sonarServer} \
-        -Dsonar.projectKey=${projectName} \
-        -Dsonar.projectName=${projectName} \
-        -Dsonar.projectVersion=${sonarDate} \
-        -Dsonar.login=admin \
-        -Dsonar.password=admin \
-        -Dsonar.ws.timeout=30 \
-        -Dsonar.projectDescription=${projectDesc} \
-        -Dsonar.links.homepage=http://www.baidu.com \
-        -Dsonar.sources=${projectPath} \
-        -Dsonar.sourceEncoding=UTF-8 \
-        -Dsonar.java.binaries=target/classes \
-        -Dsonar.java.test.binaries=target/test-classes \
-        -Dsonar.java.surefire.report=target/surefire-reports
-    """
+    
+    withSonarQubeEnv(credentialsId: 'sonar-token') {
+        sh """
+            sonar-scanner -Dsonar.projectKey=demo-maven-service \
+        	-Dsonar.projectName=demo-maven-service \
+        	-Dsonar.projectVersion=1.0 \
+        	-Dsonar.ws.timeout=30 \
+        	-Dsonar.projectDescription="my first project" \
+        	-Dsonar.links.homepage=http://www.baidu.com \
+        	-Dsonar.sources=src \
+        	-Dsonar.sourceEncoding=UTF-8 \
+        	-Dsonar.java.binaries=target/classes \
+        	-Dsonar.java.test.binaries=target/test-classes \
+        	-Dsonar.java.surefire.report=target/surefire-reports
+        """
+    }
 }
