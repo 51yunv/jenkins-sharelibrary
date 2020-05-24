@@ -18,7 +18,8 @@ def HttpReq(reqType,reqUrl,reqBody){
 def GetProjectStatus(projectName){
     apiUrl="project_branches/list?project=${projectName}"
     response = HttpReq("GET",apiUrl,'')
-    response = readJSON text: """${response.content}"""
+    //response返回的是字符串，需要用readJSON转换为json类型
+    response = readJSON text: """${response}"""
     println(response)
     return response
 }
