@@ -3,7 +3,7 @@ package org.devops
 //扫描
 def sonarScan(projectName,projectDesc,projectPath){
     //定义sonar-scanner命令环境变量
-    sonar_home = "/data/sonarqube/sonar-scanner"
+    sonar_home = "/usr/local/scanner"
     
     sonarDate = sh returnStdout: true, script: 'date +%F_%T'
     sonarDate = sonarDate - "\n"
