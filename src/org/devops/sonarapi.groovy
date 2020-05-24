@@ -6,7 +6,8 @@ def HttpReq(reqType,reqUrl,reqBody){
     result = httpRequest authentication: 'sonar-admin', 
              httpMode: reqType,
              contentType: 'APPLICATION_JSON', 
-             responseHandle: 'NONE', 
+             consoleLogResponseBody: true,
+             //responseHandle: 'NONE', 
              url: "${sonarServer}/${reqUrl}", 
              wrapAsMultipart: false
     return result
