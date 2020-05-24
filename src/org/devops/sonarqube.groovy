@@ -4,10 +4,10 @@ package org.devops
 def sonarScan(projectName,projectDesc,projectPath){
     //定义sonar-scanner命令环境变量
     sonar_home = "/usr/local/scanner"
-    
     sonarDate = sh returnStdout: true, script: 'date +%F_%T'
     sonarDate = sonarDate - "\n"
     
+    def qg = waitForQualityGate()
     
     withSonarQubeEnv(credentialsId: 'sonar-token') {
         sh """
@@ -23,5 +23,8 @@ def sonarScan(projectName,projectDesc,projectPath){
             -Dsonar.java.test.binaries=target/test-classes \
             -Dsonar.java.surefire.report=target/surefire-reports
         """
+        if (qg.status != 'OK') {
+          error "Pipeline aborted due to quality gate failure: ${qg.status}"
+        }
     }
 }
