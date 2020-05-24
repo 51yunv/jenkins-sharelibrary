@@ -14,7 +14,7 @@ def HttpReq(reqType,reqUrl,reqBody){
 
 //获取sonar质量阈状态
 
-def GetrojectStatus(projectName){
+def GetProjectStatus(projectName){
     apiUrl="project_branches/list?project=${projectName}"
     response = HttpReq("GET",apiUrl,'')
     response = readJSON text: """${response.content}"""
