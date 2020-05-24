@@ -41,7 +41,7 @@ def SearchProject(projectName){
 
 //当项目不存在时，创建项目
 def CreateProject(projectName){
-    apiUrl = "api/projects/create?name=${projectName}&project=${projectName}"
+    apiUrl = "projects/create?name=${projectName}&project=${projectName}"
     response = HttpReq("POST",apiUrl,'')
     println(response)
     
