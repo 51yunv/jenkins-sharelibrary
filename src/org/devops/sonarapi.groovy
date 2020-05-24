@@ -4,7 +4,7 @@ packge org.devops
 def HttpReq(reqType,reqUrl,reqBody){
     sonarServer = "http://sonarqubetest.goschainccap.com/api"
     result = httpRequest authentication: 'sonar-admin', 
-             httpMode: reqType
+             httpMode: reqType,
              contentType: 'APPLICATION_JSON', 
              responseHandle: 'NONE', 
              url: "${sonarServer}/${reqUrl}", 
