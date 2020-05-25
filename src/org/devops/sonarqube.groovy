@@ -10,7 +10,7 @@ def sonarScan(projectName,projectDesc,projectPath,runOpts='noset',projectId='',c
     
     
     withSonarQubeEnv(credentialsId: 'sonar-token') {
-        if(runOpts == "GitlabPush"){
+        if(runOpts != "GitlabPush"){
             sh """
                 ${sonar_home}/bin/sonar-scanner -Dsonar.projectKey=${projectName} \
                 -Dsonar.projectName=${projectName} \
