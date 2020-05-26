@@ -63,7 +63,7 @@ def ArtifactUpdate(updateType,artifactUrl){
     if("${updateType}" == "snapshot -> release"){
         println("snapshot -> release")
         //下载原始制品
-        sh "mkdir updates && cd updates && wget ${artifactUrl} && ls -l"
+        sh "mkdir updates -p && cd updates && wget ${artifactUrl} && ls -l"
         
         //获取artifactID
         artifactUrl = artifactUrl - "http://nexustest.goschainccap.com/repository/maven-hosted/"
