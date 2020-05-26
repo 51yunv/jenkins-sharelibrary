@@ -67,12 +67,13 @@ def ArtifactUpdate(updateType,artifactUrl){
         
         //获取artifactID
         artifactUrl = artifactUrl - "http://nexustest.goschainccap.com/repository/maven-hosted/"
-        env.jarName = artifactUrl.split("/")[-1]
-        env.pomVersion = artifactUrl.split("/")[-2]
-        env.pomArtifact = artifactUrl.split("/")[-3]
-        env.pomPackaging = artifactUrl.split(".")[-1]
+        artifactUrl = artifactUrl.split("/").toList()
+        env.jarName = artifactUrl[-1]
+        env.pomVersion = artifactUrl[-2]
+        env.pomArtifact = artifactUrl[-3]
+        env.pomPackaging = artifactUrl[-1]
         env.pomPackage = "/${pomArtifact}/${pomVersion}/${jarName}"
-        env.pomGroupId = artifactUrl - pomPackage
+        env.pomGroupId = artifactUrl[-4..0].join(".")
         println("${pomGroupId}-${pomArtifact}-${pomVersion}-${pomPackaging}")
         //上传制品
         //NexusUpload()
