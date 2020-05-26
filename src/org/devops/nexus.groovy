@@ -71,7 +71,7 @@ def ArtifactUpdate(updateType,artifactUrl){
         env.jarName = artifactUrl[-1]
         env.pomVersion = artifactUrl[-2]
         env.pomArtifact = artifactUrl[-3]
-        env.pomPackaging = artifactUrl[-1]
+        env.pomPackaging = artifactUrl[-1].split(".").toList()[-1]
         env.pomGroupId = artifactUrl[-4..0].join(".")
         println("${pomGroupId}##${pomArtifact}##${pomVersion}##${pomPackaging}")
         //上传制品
