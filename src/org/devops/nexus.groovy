@@ -56,3 +56,26 @@ def main(uploadType){
         NexusUpload()
     }
 }
+
+//晋级制品
+def ArtifactUpdate(updateType,artifactUrl){
+    //定义晋级策略
+    if("${updateType}" == "snapshot -> release"){
+        println("snapshot -> release")
+        //下载原始制品
+        sh "mkdir updates && cd updates && wget ${artifactUrl} && ls -l"
+        
+        //获取artifactID
+        artifactUrl = artifactUrl - "http://nexustest.goschainccap.com/repository/maven-hosted/"
+        env.jarName = artifactUrl.split("/")[-1]
+        env.pomVersion = artifactUrl.split("/")[-2]
+        env.pomArtifact = artifactUrl.split("/")[-3]
+        env.pomPackaging = artifactUrl.split(".")[-1]
+        env.pomPackage = "/${pomArtifact}/${pomVersion}/${jarName}"
+        env.pomGroupId = artifactUrl - pomPackage
+        println("${pomGroupId}-${pomArtifact}-${pomVersion}-${pomPackaging}")
+        //上传制品
+        //NexusUpload()
+        
+    }
+}
