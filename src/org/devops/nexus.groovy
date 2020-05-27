@@ -34,8 +34,6 @@ def MavenUpload(){
 
 //使用Nexus插件上传
 def NexusUpload(){
-    repoName = "maven-hosted"
-    filePath = "target/${jarName}"
     nexusArtifactUploader artifacts: [[artifactId: "${pomArtifact}", classifier: '', file: "${filePath}", type: "${pomPackaging}"]], 
                           credentialsId: 'nexus-admin', 
                           groupId: "${pomGroupId}", 
@@ -53,6 +51,8 @@ def main(uploadType){
     if("${uploadType}" == "maven"){
         MavenUpload()
     }else if("${uploadType}" == "nexus"){
+        env.repoName = "maven-release"
+        env.filePath = "updates/${jarName}"
         NexusUpload()
     }
 }
