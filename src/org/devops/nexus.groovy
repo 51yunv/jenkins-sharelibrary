@@ -78,7 +78,7 @@ def ArtifactUpdate(updateType,artifactUrl){
         env.pomGroupId = artifactUrl[0..2].join(".")
         println("${pomGroupId}##${pomArtifact}##${pomVersion}##${pomPackaging}")
         //上传制品
-        env.repoName = "maven-release"
+        env.repoName = "maven-releases"
         env.filePath = "updates/${jarName}"
         NexusUpload()
         
