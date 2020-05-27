@@ -17,7 +17,7 @@ def HttpRequest(reqType,reqUrl,reqBody){
 
 //获取仓库中所有组件
 def GetRepoComponents(repoName){
-    apiUrl = "/v1/comments?repository=${repoName}"
+    apiUrl = "v1/components?repository=${repoName}"
     response = HttpRequest("GET",apiUrl,"")
     response = readJSON text: "${response.content}"
     println(response["items"].size())   
