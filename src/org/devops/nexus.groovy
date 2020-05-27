@@ -64,7 +64,8 @@ def ArtifactUpdate(updateType,artifactUrl){
         println("snapshot -> release")
         //下载原始制品
         sh """
-            [ ! -d updates ] && mkdir updates && rm -f updates/*  && cd updates && wget ${artifactUrl} && ls -l
+            [ ! -d updates ] && mkdir updates 
+            rm -f updates/*  && cd updates && wget ${artifactUrl} && ls -l
         """
         
         //获取artifactID
