@@ -72,9 +72,8 @@ def ArtifactUpdate(updateType,artifactUrl){
         env.jarName = artifactUrl[-1]
         env.pomVersion = artifactUrl[-2]
         env.pomArtifact = artifactUrl[-3]
-        pomPackaging = artifactUrl[-1].replace(".","-").split("-")[-1]
-        println(pomPackaging)
-        env.pomGroupId = artifactUrl[-4..0].join(".")
+        env.pomPackaging = artifactUrl[-1].replace(".","-").split("-")[-1]
+        env.pomGroupId = artifactUrl[0..3].join(".")
         println("${pomGroupId}##${pomArtifact}##${pomVersion}##${pomPackaging}")
         //上传制品
         //NexusUpload()
