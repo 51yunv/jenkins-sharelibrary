@@ -72,7 +72,7 @@ def ArtifactUpdate(updateType,artifactUrl){
         artifactUrl = artifactUrl - "http://nexustest.goschainccap.com/repository/maven-hosted/"
         artifactUrl = artifactUrl.split("/").toList()
         env.jarName = artifactUrl[-1]
-        env.pomVersion = artifactUrl[-2]
+        env.pomVersion = artifactUrl[-2].replace("SNAPSHOT","RELEASE")
         env.pomArtifact = artifactUrl[-3]
         env.pomPackaging = artifactUrl[-1].replace(".","-").split("-")[-1]
         env.pomGroupId = artifactUrl[0..2].join(".")
