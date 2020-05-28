@@ -41,3 +41,15 @@ def CreateBranch(projectId,refBranch,newBranch){
     repsonse = HttpReq("POST",createBranchApi,"").content
     branchInfo = readJSON text: "${response}"
 }
+
+//创建合并请求
+def CreateMr(projectId,sourceBranch,targetBranch,title,assigneeUser=""){
+    try {
+        def mrUrl = "projects/${projectId}/merge_requests"
+        def reqBody = """{"source_branch":"${sourceBranch}", "target_branch": "${targetBranch}","title":"${title}","assignee_id":"${assigneeUser}"}"""
+        response = HttpReq("POST",mrUrl,reqBody).content
+        return response
+    } catch(e){
+        println(e)
+    }
+}
