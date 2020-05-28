@@ -21,3 +21,23 @@ def ChangeCommitStatus(projectId,commitSha,status){
     println("返回的结果为：" + response)
     //return response
 }
+
+//获取项目ID
+def GetProjectID(repoName="",projectName){
+    projectApi = "projects?search=${projectName}"
+    response = HttpReq("GET",projectApi,"").content
+    result = readJSON text: "${response}"
+    
+    for(repo in result){
+        if(repo["path"] == "${projectName}"){
+            repoId = repo["id"]
+        }
+    }
+    return repoId
+}
+//创建分支
+def CreateBranch(projectId,refBranch,newBranch){
+    createBranchApi = "projects/${projectId}/repository/branches?branch=${newBranch}&ref=${refBranch}"
+    repsonse = HttpReq("POST",createBranchApi,"").content
+    branchInfo = readJSON text: "${response}"
+}
