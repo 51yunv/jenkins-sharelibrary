@@ -10,8 +10,8 @@ def HttpReq(reqType,reqUrl,reqBody){
                                     [maskValue: true, name: 'Authorization', value: "Bearer $k8stoken"],
                                     [maskValue: false, name: 'Content-Type', value: 'application/yaml'],
                                     [maskValue: false, name: 'Accept', value: 'application/yaml']], 
-                               httpMode: reqType, 
-                               requestBody: reqBody,
+                               httpMode: "${reqType}", 
+                               requestBody: "${reqBody}",
                                responseHandle: 'NONE', 
                                url: "${apiUrl}/${reqUrl}", 
                                wrapAsMultipart: false
