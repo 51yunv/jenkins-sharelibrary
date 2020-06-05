@@ -13,7 +13,7 @@ def HttpReq(reqType,reqUrl,reqBody){
                                httpMode: reqType, 
                                requestBody: reqBody,
                                responseHandle: 'NONE', 
-                               url: "${apiUrl}/$reqUrl", 
+                               url: "${apiUrl}/${reqUrl}", 
                                wrapAsMultipart: false
     }
     return result
@@ -23,7 +23,7 @@ def HttpReq(reqType,reqUrl,reqBody){
 //获取deployment
 
 def GetDeployment(namespace,deployment){
-    apiUrl = "namespaces/${namespace}/daemonsets/${name}"
+    apiUrl = "namespaces/${namespace}/daemonsets/${deployment}"
     response = HttpReq("GET",apiUrl,"").content
     
     result = readYAML text: """${response}"""
