@@ -61,7 +61,7 @@ def CreateMr(projectId,sourceBranch,targetBranch,title,assigneeUser=""){
 //创建仓库文件
 def createRepoFile(projectId,filePath,fileContent){
     apiUrl = "projects/${projectId}/repository/files/${filePath}"
-    reqBody = """{"branch": "master", "content": "${fileContent}", "commit_message": "create a new file"}"""
+    reqBody = """{"branch": "master","encoding":"base64", "content": "${fileContent}", "commit_message": "create a new file"}"""
     response = HttpReq("POST",apiUrl,reqBody)
     println(response)
 }
