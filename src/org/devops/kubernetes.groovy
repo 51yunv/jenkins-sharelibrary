@@ -23,7 +23,7 @@ def HttpReq(reqType,reqUrl,reqBody){
 //获取deployment
 
 def GetDeployment(namespace,deployment){
-    apiUrl = "namespaces/${namespace}/daemonsets/${deployment}"
+    apiUrl = "namespaces/${namespace}/deployments/${deployment}"
     response = HttpReq("GET",apiUrl,"").content
     
     result = readYAML text: """${response}"""
