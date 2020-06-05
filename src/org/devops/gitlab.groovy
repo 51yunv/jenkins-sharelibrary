@@ -9,6 +9,7 @@ def HttpReq(reqType,reqUrl,reqBody){
                              contentType: 'APPLICATION_JSON',
                              url: "${gitlabServer}/${reqUrl}",
                              requestBody: "${reqBody}",
+                             consoleLogResponseBody: true,
                              wrapAsMultipart: false
     }
     return result
