@@ -11,8 +11,8 @@ def HttpReq(reqType,reqUrl,reqBody){
                              requestBody: "${reqBody}",
                              responseHandle: 'NONE', 
                              url: "${apiUrl}/${reqUrl}", 
-                             wrapAsMultipart: false,
-                             ignoreSslErrors: true
+                             wrapAsMultipart: false
+                             //ignoreSslErrors: true
     }
     return result
 }
