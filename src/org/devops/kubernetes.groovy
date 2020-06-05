@@ -22,5 +22,5 @@ def GetDeployment(namespace,deployment){
     apiUrl = "namespaces/${namespace}/deployments/${deployment}"
     response = HttpReq("GET",apiUrl,"")
     //result = readYaml text: """${response}"""
-    println(response)
+    return response
 }
