@@ -7,7 +7,7 @@ def HttpReq(reqType,reqUrl,reqBody){
         result = httpRequest consoleLogResponseBody: true, 
                                contentType: 'TEXT_HTML', 
                                customHeaders: [
-                                    [maskValue: true, name: 'Authorization', value: 'Bearer $k8stoken'],
+                                    [maskValue: true, name: 'Authorization', value: "Bearer $k8stoken"],
                                     [maskValue: false, name: 'Content-Type', value: 'application/yaml'],
                                     [maskValue: false, name: 'Accept', value: 'application/yaml']], 
                                httpMode: reqType, 
