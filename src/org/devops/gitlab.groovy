@@ -6,12 +6,12 @@ def HttpReq(reqType,reqUrl,reqBody){
     withCredentials([string(credentialsId: 'gitlab-token', variable: 'gitlabToken')]) {
         httpRequest httpMode: "${reqType}",
                              customHeaders: [[maskValue: true, name: 'PRIVATE-TOKEN', value: "${gitlabToken}"]], 
-                             //contentType: 'APPLICATION_JSON',
+                             contentType: 'APPLICATION_JSON',
                              url: "${gitlabServer}/${reqUrl}",
                              requestBody: "${reqBody}",
                              wrapAsMultipart: false
     }
-    //return result
+    return result
     
 }
 
