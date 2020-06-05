@@ -8,6 +8,7 @@ def HttpReq(reqType,reqUrl,reqBody){
                              customHeaders: [[maskValue: true, name: 'PRIVATE-TOKEN', value: "${gitlabToken}"]], 
                              //contentType: 'APPLICATION_JSON',
                              url: "${gitlabServer}/${reqUrl}",
+                             requestBody: "${reqBody}",
                              wrapAsMultipart: false
     }
     //return result
@@ -52,4 +53,15 @@ def CreateMr(projectId,sourceBranch,targetBranch,title,assigneeUser=""){
     } catch(e){
         println(e)
     }
+}
+
+//删除分支
+
+
+//创建仓库文件
+def createRepoFile(projectId,filePath,fileContent){
+    apiUrl = "projects/${projectId}/repository/files/${filePath}"
+    reqBody = """{"branch": "master", "content": "${fileContent}", "commit_message": "create a new file"}"""
+    response = HttpReq("POST",apiUrl,reqBody)
+    println(response)
 }
