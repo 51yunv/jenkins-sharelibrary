@@ -4,7 +4,7 @@ package org.devops
 def HttpReq(reqType,reqUrl,reqBody){
     gitlabServer = "http://gitlabtest.goschainccap.com/api/v4"
     withCredentials([string(credentialsId: 'gitlab-token', variable: 'gitlabToken')]) {
-        result httpRequest httpMode: "${reqType}",
+        result = httpRequest httpMode: "${reqType}",
                              customHeaders: [[maskValue: true, name: 'PRIVATE-TOKEN', value: "${gitlabToken}"]], 
                              contentType: 'APPLICATION_JSON',
                              url: "${gitlabServer}/${reqUrl}",
