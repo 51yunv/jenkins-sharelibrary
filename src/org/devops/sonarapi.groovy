@@ -1,69 +1,63 @@
-packge org.devops
+package org.devops
 
-//封装http请求
+//封装Http请求
 def HttpReq(reqType,reqUrl,reqBody){
     sonarServer = "http://sonarqubetest.goschainccap.com/api"
-    result = httpRequest authentication: 'sonar-admin', 
-             httpMode: reqType,
-             contentType: 'APPLICATION_JSON', 
-             consoleLogResponseBody: true,
-             //responseHandle: 'NONE', 
-             url: "${sonarServer}/${reqUrl}", 
-             wrapAsMultipart: false
+    result = httpRequest authentication: 'sonar-user', 
+                         consoleLogResponseBody: true, 
+                         contentType: 'APPLICATION_JSON', 
+                         httpMode: reqType, 
+                         ignoreSslErrors: true, 
+                         responseHandle: 'NONE', 
+                         url: "${sonarServer}/${reqUrl}", 
+                         wrapAsMultipart: false
     return result
 }
 
-//获取sonar质量阈状态
-
+//获取质量阈状态
 def GetProjectStatus(projectName){
-    apiUrl="project_branches/list?project=${projectName}"
-    response = HttpReq("GET",apiUrl,'')
-    //response返回的是字符串，需要用readJSON转换为json类型
-    response = readJSON text: """${response.content}"""
-    //获取json中某个key的value
+    apiUrl = "project_branches/list?project=${projectName}"
+    response = HttpReq("GET",apiUrl,"")
+    //解析json数据
+    response = readJSON text: "${response.content}"
     result = response["branches"][0]["status"]["qualityGateStatus"]
-    return result
-}
-
-//通过api搜索sonar项目，判断其是否存在
-def SearchProject(projectName){
-    apiUrl = "projects/search?projects=${projectName}"
-    response = HttpReq("GET",apiUrl,'')
-    response = readJSON text: """${response.content}"""
-    result = response["paging"]["total"]
     
-    if(result.toString() == "0"){
-        return "false"
-    }else{
-        return "true"
+    if(result != "OK"){
+        error "代码扫描质量阈错误，请仔细检查代码！"
     }
 }
 
-//当项目不存在时，创建项目
-def CreateProject(projectName){
-    apiUrl = "projects/create?name=${projectName}&project=${projectName}"
-    response = HttpReq("POST",apiUrl,'')
-    println(response)
+//搜索sonar项目，判断项目是否存在
+def SearchProject(projectName){
+    apiUrl = "projects/search?projects=${projectName}"
+    response = HttpReq("GET",apiUrl,"") 
+    response = readJSON text: """${response.content}"""
+    result = response["paging"]["total"]
+    return result
 }
 
-//配置项目质量规则
-def ConfigQualityProfiles(lang,projectName,qpname){
-    apiUrl = "qualityprofiles/add_project?language=${lang}&project=${projectName}&qualityProfile=${qpname}"
-    response = HttpReq("POST",apiUrl,'')
-    println(response)
+//新建项目
+def CreateProject(projectName){
+    apiUrl = "projects/create?name=${projectName}&project=${projectName}"
+    HttpReq("POST",apiUrl,"")
 }
-//获取质量阈的id；因为通过api配置项目的质量阈时，需要知道某个质量阈的id
-def GetQualityGateId(qualityGateName){
-    apiUrl = "qualitygates/show?name=${qualityGateName}"
-    response = HttpReq("GET",apiUrl,'')
-    response = readJSON text: """${response.content}"""
+
+//指定项目的质量规则，当不指定时默认是java语言，默认质量规则是系统自带的java质量规则
+def ConfigQualityprofiles(projectName,lang="java",qualityprofile="Sonar%20way"){
+    apiUrl = "qualityprofiles/add_project?project=${projectName}&language=${lang}&qualityProfile=${qualityprofile}"
+    HttpReq("POST",apiUrl,"")
+}
+
+//获取质量阈的id
+def GetGateId(gateName){
+    apiUrl = "qualitygates/show?name=${gateName}"
+    response = HttpReq("GET",apiUrl,"").content
+    response = readJSON text: "${response}"
     result = response["id"]
     return result
 }
-//配置项目质量阈
-def ConfigQualityGates(projectName,qualityGateName){
-    gateId = GetQualityGateId(qualityGateName)
+//配置项目的质量阈
+def ConfigGate(projectName,gateId){
     apiUrl = "qualitygates/select?projectKey=${projectName}&gateId=${gateId}"
-    response = HttpReq("POST",apiUrl,'')
-    println(response)
+    HttpReq("POST",apiUrl,"")
 }
