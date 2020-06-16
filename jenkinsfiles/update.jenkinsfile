@@ -1,0 +1,22 @@
+#!groovy
+@Library("jenkinslib@master") _
+
+def nexus = new org.devops.nexus()
+def nexusApi = new org.devops.nexusapi()
+
+String updateType = "${env.updateType}"
+String artifactUrl = "${env.artifactUrl}"
+
+pipeline{
+    agent any
+    stages{
+        stage("更新制品"){
+            steps{
+                script{
+                    //nexus.ArtifactUpdate(updateType,artifactUrl)
+                    nexusApi.GetRepoComponents("maven-snapshots")
+                }
+            }
+        }
+    }
+}

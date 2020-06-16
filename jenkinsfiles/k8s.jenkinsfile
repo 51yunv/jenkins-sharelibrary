@@ -1,0 +1,20 @@
+#!groovy
+
+@Library("jenkinslib@master") _
+
+def buildtools = new org.devops.tools()
+def k8s =  new org.devops.kubernetes()
+
+pipeline {
+    agent any
+    stages{
+        stage("测试k8s"){
+            steps{
+                script{
+                    buildtools.PrintMes("获取k8s信息","green")
+                    k8s.GetDeployment("devops","jenkins")
+                }
+            }
+        }
+    }
+}

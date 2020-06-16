@@ -1,0 +1,159 @@
+#!groovy
+
+@Library("jenkinslib@master") _
+
+def build = new org.devops.build()
+def checkout = new org.devops.checkout()
+def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
+def toemail = new org.devops.toemail()
+def sonar = new org.devops.sonarqube()
+def sonarapi = new org.devops.sonarapi()
+def
+
+//def runOpts
+
+String srcUrl = "${env.srcUrl}"
+String buildType = "${env.buildType}"
+String buildShell= "${env.buildShell}"
+String projectId = "${env.projectId}"
+String commitSha = "${env.commitSha}"
+String userEmail = "${env.UserEmail}"
+
+if("${runOpts}" == "GitlabPush"){
+    env.branchName = branch - "refs/heads/"
+    currentBuild.description = "提交用户：${userName}->分支：${branchName}"
+    //提交后，让commit处于running状态
+    gitlab.ChangeCommitStatus(projectId,commitSha,"running")
+}else{
+    env.branchName = "master"
+    userEmail = "1135960569@qq.com"
+}
+
+
+pipeline{
+    agent any
+    options {
+        skipDefaultCheckout()
+    }
+    stages{
+        stage("下载代码"){
+            steps{
+                script{
+                    tools.PrintMes("下载项目代码","green")
+                    checkout.CheckOut("gitlab-user","$srcUrl","$branchName")
+                }
+            }
+        }
+        stage("构建打包"){
+            steps{
+                script{
+                    tools.PrintMes("执行编译打包","green")
+                    build.Build("$buildType","$buildShell")
+                }
+            }
+        }
+        stage("代码扫描"){
+            steps{
+                script{
+                    tools.PrintMes("判断项目是否存在","green")
+                    result = sonarapi.SearchProject("${JOB_NAME}")
+                    if(result == 0){
+                        tools.PrintMes("创建项目","green")
+                        sonarapi.CreateProject("${JOB_NAME}")
+                        tools.PrintMes("配置质量规则","green")
+                        sonarapi.ConfigQualityprofiles("${JOB_NAME}")
+                        tools.PrintMes("获取指定质量阈id","green")
+                        gateId = sonarapi.GetGateId("demo")
+                        tools.PrintMes("配置质量阈","green")
+                        sonarapi.ConfigGate("${JOB_NAME}",gateId)
+                    }
+                    tools.PrintMes("执行代码扫描","green")
+                    sonar.SonarScan("${JOB_NAME}","${JOB_NAME}","src")
+                }
+            }
+        }
+        stage("扫描结果"){
+            steps{
+                script{
+                    tools.PrintMes("代码扫描结果","green")
+                    sonar.SonarScanResult()
+                }
+            }
+        }
+        stage("构建镜像"){
+            steps{
+                script{
+                    tools.PrintMes("构建镜像并上传到阿里云仓库","green")
+                    serviceName = "${JOB_NAME}".split("_")[0]
+                    withCredentials([usernamePassword(credentialsId: 'aliyun-docker-registory', passwordVariable: 'password', usernameVariable: 'username')]) {
+                        env.dockerImage = "registry.cn-beijing.aliyuncs.com/goschain/demo-uat/${serviceName}:${branchName}"
+                        sh """
+                            docker login -u ${username} -p ${password} registry.cn-beijing.aliyuncs.com
+                            docker build -t registry.cn-beijing.aliyuncs.com/goschain/demo-uat/${serviceName}:${branchName} .
+                            docker push registry.cn-beijing.aliyuncs.com/goschain/demo-uat/${serviceName}:${branchName}
+                            docker rmi registry.cn-beijing.aliyuncs.com/goschain/demo-uat/${serviceName}:${branchName}
+                        """
+                    }
+                }
+            }
+        }
+        stage("接口测试"){
+            steps{
+                script{
+                    tools.PrintMes("接口测试","green")
+                }
+            }
+        }
+        stage("发布应用"){
+            steps{
+                script{
+                    tools.PrintMes("发布应用","green")
+                    //下载版本库文件
+                    response = gitlab.GetRepoFile(5,"demo-uat%2f1.3.0-uat.yaml")
+                    fileData = readYaml text:"""${response}"""
+                    println(fileData)
+                    //替换文件中内容的镜像
+                    oldImage = fileData["spec"]["template"]["spec"]["containers"][0]["image"]
+                    response.replace("${oldImage}","${dockerImage}")
+                    println("Hello World!")
+                    println(dockerImage)
+                    println(response)
+                    //转换成base64并替换原有文件
+                    //base64Content = response.bytes.encodeBase64().toString()
+                    //gitlab.UpdateRepoFile(5,"demo-uat%2f1.3.0-uat.yaml",base64Content)
+                }
+            }
+        }
+    }
+    post{
+        success{
+            script{
+                println("success")
+                if(runOpts == "GitlabPush"){
+                    gitlab.ChangeCommitStatus(projectId,commitSha,"success")
+                }
+                toemail.Email("构建成功",userEmail)
+            }
+        }
+        failure{
+            script{
+                println("failure")
+                if(runOpts == "GitlabPush"){
+                    gitlab.ChangeCommitStatus(projectId,commitSha,"failed")
+                }
+                toemail.Email("构建失败",userEmail)
+            }
+        }
+        aborted{
+            script{
+                println("aborted")
+                if(runOpts == "GitlabPush"){
+                    gitlab.ChangeCommitStatus(projectId,commitSha,"canceled")
+                }
+                toemail.Email("构建取消",userEmail)
+            }
+        }
+        
+    }
+}

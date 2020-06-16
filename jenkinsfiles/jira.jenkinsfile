@@ -1,0 +1,199 @@
+#!groovy
+@Library("jenkinslib@master") _
+
+def tools = new org.devops.tools()
+def gitlab = new org.devops.gitlab()
+def jira = new org.devops.jira()
+def k8s = new org.devops.kubernetes()
+
+String webHookData = "${env.webHookData}"
+
+pipeline{
+    agent {label "master"}
+    options{
+        skipDefaultCheckout()
+    }
+    stages{
+        stage("处理数据"){
+            steps{
+                script{
+                    response = readJSON text:"""${webHookData}"""
+                    println(response)
+                    env.webhookEvent = response["webhookEvent"]
+                    switch(webhookEvent){
+                        case "jira:issue_created":
+                            env.moduleNames = response["issue"]["fields"]["components"]
+                            env.issueName = response["issue"]["key"]
+                            env.userName = response["user"]["name"]
+                            env.fixVersion = response["issue"]["fields"]["fixVersions"]
+                            currentBuild.description = "类型：创建分支\n操作人：${userName}"
+                            break
+                        case "jira:issue_updated":
+                            env.moduleNames = response["issue"]["fields"]["components"]
+                            env.issueName = response["issue"]["key"]
+                            env.userName = response["user"]["name"]
+                            env.fixVersion = response["issue"]["fields"]["fixVersions"]
+                            currentBuild.description = "类型：更新分支\n操作人：${userName}"
+                            break
+                        case "jira:issue_deleted":
+                            env.moduleNames = response["issue"]["fields"]["components"]
+                            env.issueName = response["issue"]["key"]
+                            env.userName = response["user"]["name"]
+                            currentBuild.description = "类型：删除分支\n操作人：${userName}"
+                            break
+                        case "jira:version_created":
+                            env.versionName = response["version"]["name"]
+                            currentBuild.description = "类型：创建发布分支\n分支：${versionName}"
+                            break
+                        case "jira:version_deleted":
+                            env.versionName = response["version"]["name"]
+                            currentBuild.description = "类型：删除发布分支\n分支：${versionName}"
+                            break
+                        case "jira:version_released":
+                            env.versionName = response["version"]["name"]
+                            currentBuild.description = "类型：发布版本\n分支：${versionName}"
+                            break
+                    }
+                }
+            }
+        }
+        stage("创建版本文件"){
+            when {
+                environment name:"webhookEvent",value:"jira:version_created"
+            }
+            steps{
+                script{
+                    //获取k8s文件
+                    response = k8s.GetDeployment("demo-uat","demo-uat")
+                    //将原始文件内容转换为base64后上传
+                    base64Content = response.bytes.encodeBase64().toString()
+                    //上传文件
+                    gitlab.CreateRepoFile(5,"demo-uat%2f${versionName}-uat.yaml",base64Content)
+                }
+            }
+        }
+        stage("创建分支或合并请求"){
+            when {
+                anyOf{
+                    environment name:"webhookEvent",value:"jira:issue_created"
+                    environment name:"webhookEvent",value:"jira:issue_updated"
+                }
+            }
+            steps{
+                script{
+                    fixVersion = readJSON text: """${fixVersion}"""
+                    projectIds = []
+                    projects = readJSON text: """${moduleNames}"""
+                    for(project in projects){
+                        projectName = project["name"]
+                        currentBuild.description += "\n项目：${projectName}"
+                        
+                        try{
+                            projectId = gitlab.GetProjectId(projectName)
+                            projectIds.add(projectId)
+                            println(projectIds)
+                        }catch(e){
+                            println(e)
+                        }
+                    }
+                    if(fixVersion.size() == 0){
+                        for(id in projectIds){
+                            currentBuild.description += "\n分支：${issueName}"
+                            gitlab.CreateProjectBranch(id,"${issueName}")
+                        }
+                    }else{
+                        fixVersion = fixVersion[0]["name"]
+                        currentBuild.description += "\n创建合并请求：${issueName}--->RELEASE-${fixVersion}"
+                        for(id in projectIds){
+                            gitlab.CreateProjectBranch(id,"RELEASE-${fixVersion}")
+                            gitlab.CreateMR(id,"${issueName}","RELEASE-${fixVersion}","${issueName}--->RELEASE-${fixVersion}")
+                        }
+                    }
+                }
+            }
+        }
+        stage("手动清理分支"){
+            when {
+                environment name:"webhookEvent",value:"jira:issue_deleted"
+            }
+            steps{
+                script{
+                    projectIds = []
+                    projects = readJSON text: """${moduleNames}"""
+                    for(project in projects){
+                        projectName = project["name"]
+                        currentBuild.description += "\n项目：${projectName}"
+                        
+                        try{
+                            projectId = gitlab.GetProjectId(projectName)
+                            projectIds.add(projectId)
+                        }catch(e){
+                            println(e)
+                        }
+                    }
+                    for(id in projectIds){
+                        currentBuild.description += "\n分支：${issueName}"
+                        gitlab.DeleteProjectBranch(id,"${issueName}")
+                    }
+                }
+            }
+        }
+        stage("jira版本发布时自动清理特性分支并创建release到master的MR"){
+            when {
+                environment name:"webhookEvent",value:"jira:version_released"
+            }
+            steps{
+                script{
+                    //获取issuesName
+                    println("project%20%3D%20${projectKey}%20AND%20fixVersion%20%3D%20${versionName}%20AND%20issuetype%20%3D%20任务")
+                    response = jira.RunJql("project%20%3D%20${projectKey}%20AND%20fixVersion%20%3D%20${versionName}%20AND%20issuetype%20%3D%20任务")
+                    
+                    response = readJSON text: """${response.content}"""
+                    println(response)
+                    issues = [:]
+                    for ( issue in response['issues']){
+                        println(issue["key"])
+                        println(issue["fields"]["components"])
+                        issues[issue["key"]] = []
+                        
+                        //获取issue关联的模块
+                        for (component in issue["fields"]["components"] ){
+                            issues[issue["key"]].add(component["name"])
+                        }
+                    }
+                    
+                    println(issues)
+                    //搜索gitlab分支是否已合并然后删除
+                    for (issue in issues.keySet()){
+                        for (projectName in issues[issue]){
+                            //repoName = projectName.split("-")[0]
+                            projectId = gitlab.GetProjectId(projectName)
+                            
+                            try {
+                                println("创建合并请求  RELEASE-${versionName}  ---> master")
+                                result = gitlab.CreateMR(projectId,"RELEASE-${versionName}","master","RELEASE-${versionName}--->master")
+                                result = readJSON text: """${result}"""
+                                mergeId = result["iid"]
+                                gitlab.AcceptMr(projectId,mergeId)
+                                
+                                sleep 15
+                            } catch(e){
+                                println(e)
+                            }
+                            response = gitlab.SearchProjectBranches(projectId,issue)
+                            
+                            println(response[projectId][0]['merged'])
+                            
+                            if (response[projectId][0]['merged'] == false){
+                                println("${projectName} --> ${issue} -->此分支未合并暂时忽略！")
+                            } else {
+                                println("${projectName} --> ${issue} -->此分支已合并准备清理！")
+                                gitlab.DeleteProjectBranch(projectId,issue)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
